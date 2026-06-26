@@ -1,0 +1,451 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Taxman API",
+    "version": "1.0"
+  },
+  "servers": [],
+  "tags": [
+    {
+      "name": "Health"
+    },
+    {
+      "name": "Subscriptions"
+    },
+    {
+      "name": "Tariffs"
+    }
+  ],
+  "paths": {
+    "/api/v1/subscriptions": {
+      "post": {
+        "tags": [
+          "Subscriptions"
+        ],
+        "summary": "Create a new subscription",
+        "description": "Creates a new subscription for a user with the specified tariff.\nIf user already has an active subscription we update it.\nAs of right now",
+        "requestBody": {
+          "content": {
+            "application/json; charset=utf-8": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSubscriptionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateSubscriptionResponse"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateSubscriptionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDetail"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDetail"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "MySecurityScheme": []
+          }
+        ]
+      },
+      "get": {
+        "tags": [
+          "Subscriptions"
+        ],
+        "summary": "Get subscription by user ID",
+        "parameters": [
+          {
+            "name": "user_id",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "in": "query",
+            "required": true,
+            "deprecated": false,
+            "explode": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved subscriptions",
+            "content": {
+              "application/json; charset=utf-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubscriptionsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request payload",
+            "content": {
+              "application/json; charset=utf-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tariffs": {
+      "get": {
+        "tags": [
+          "Tariffs"
+        ],
+        "summary": "List all available tariffs",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json; charset=utf-8": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TariffDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json; charset=utf-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/subscriptions/{subscription_id}/cancel": {
+      "post": {
+        "tags": [
+          "Subscriptions"
+        ],
+        "summary": "Cancel a subscription",
+        "description": "Cancels a subscription with the specified ID. The cancellation can be immediate or at the end of the billing period.",
+        "parameters": [
+          {
+            "name": "subscription_id",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "in": "path",
+            "required": true,
+            "deprecated": false,
+            "explode": true
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json; charset=utf-8": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelSubscriptionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully cancelled subscription",
+            "content": {
+              "application/json; charset=utf-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateSubscriptionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request payload",
+            "content": {
+              "application/json; charset=utf-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json; charset=utf-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Subscription not found",
+            "content": {
+              "application/json; charset=utf-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDetail"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "MySecurityScheme": []
+          }
+        ]
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": [
+          "Health"
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json; charset=utf-8": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CancelSubscriptionRequest": {
+        "type": "object",
+        "title": "CancelSubscriptionRequest",
+        "required": [
+          "cancel_at",
+          "reason"
+        ],
+        "properties": {
+          "cancel_at": {
+            "type": "string",
+            "description": "When to cancel the subscription: \"now\" or \"period_end\""
+          },
+          "reason": {
+            "type": "string",
+            "description": "Reason for cancellation: \"user_request\", \"non_payment\", \"fraud\", or \"other\""
+          }
+        }
+      },
+      "CreateSubscriptionRequest": {
+        "type": "object",
+        "title": "CreateSubscriptionRequest",
+        "required": [
+          "user_id",
+          "tariff_id"
+        ],
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "User ID"
+          },
+          "tariff_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Tariff ID"
+          }
+        }
+      },
+      "CreateSubscriptionResponse": {
+        "type": "object",
+        "title": "CreateSubscriptionResponse",
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Subscription ID"
+          }
+        }
+      },
+      "ErrorDetail": {
+        "type": "object",
+        "title": "ErrorDetail",
+        "required": [
+          "message_code",
+          "details"
+        ],
+        "properties": {
+          "message_code": {
+            "type": "string"
+          },
+          "details": {
+            "type": "string"
+          }
+        }
+      },
+      "Feature": {
+        "type": "object",
+        "title": "Feature",
+        "required": [
+          "ad",
+          "description"
+        ],
+        "properties": {
+          "ad": {
+            "type": "string",
+            "description": "Feature advertisement/name"
+          },
+          "description": {
+            "type": "string",
+            "description": "Feature description"
+          }
+        }
+      },
+      "SubscriptionData": {
+        "type": "object",
+        "title": "SubscriptionData",
+        "required": [
+          "id",
+          "user_id",
+          "tariff_id",
+          "status",
+          "start_at",
+          "created_at",
+          "updated_at"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Subscription ID"
+          },
+          "user_id": {
+            "type": "string",
+            "description": "User ID"
+          },
+          "tariff_id": {
+            "type": "string",
+            "description": "Tariff ID"
+          },
+          "status": {
+            "type": "string",
+            "description": "Subscription status"
+          },
+          "start_at": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Start date (Unix UTC timestamp)"
+          },
+          "created_at": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Creation timestamp (Unix UTC timestamp)"
+          },
+          "updated_at": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Update timestamp (Unix UTC timestamp)"
+          }
+        }
+      },
+      "SubscriptionsResponse": {
+        "type": "object",
+        "title": "SubscriptionsResponse",
+        "required": [
+          "subscriptions"
+        ],
+        "properties": {
+          "subscriptions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SubscriptionData"
+            }
+          }
+        }
+      },
+      "TariffDto": {
+        "type": "object",
+        "title": "TariffDto",
+        "required": [
+          "id",
+          "name",
+          "price",
+          "description",
+          "features",
+          "interval"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number",
+            "format": "double"
+          },
+          "description": {
+            "type": "string"
+          },
+          "features": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Feature"
+            }
+          },
+          "interval": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "MySecurityScheme": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  }
+}
